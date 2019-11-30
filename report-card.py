@@ -81,6 +81,7 @@ def add_course(conn):
         assignment_weight = float(input())
         weights[assignment_type] = assignment_weight
     db.update_course(conn, course_name, weights)
+    conn.commit()
 
 
 def add_assignment(conn):
