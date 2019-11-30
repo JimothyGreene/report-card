@@ -11,23 +11,26 @@ def main():
     print('Welcome to your report card. What would you like to do? ')
     while True:
         print("Would you like to 'Check', 'Add', or 'Exit'?")
-        if input().lower() == 'check':
+        command = input().lower()
+        if command == 'check':
             print("Would you like to check 'Grades' or 'GPA'?")
-            if input().lower() == 'grades':
+            check_command = input().lower()
+            if check_command == 'grades':
                 check_grades(conn)
-            elif input().lower() == 'gpa':
+            elif check_command == 'gpa':
                 check_gpa(conn)
             else:
                 print('That is not a valid command. Please try again')
-        elif input().lower() == 'add':
+        elif command == 'add':
             print("Would you like to add a 'Course' or an 'Assignment'?")
-            if input().lower() == 'course':
+            add_command = input().lower()
+            if add_command == 'course':
                 add_course(conn)
-            elif input().lower() == 'assignment':
+            elif add_command == 'assignment':
                 add_assignment(conn)
             else:
                 print('That is not a valid command. Please try again')
-        elif input().lower() == 'exit':
+        elif command == 'exit':
             print('Shutting down...')
             break
         else:
@@ -62,7 +65,22 @@ def check_gpa(conn):
 
 
 def add_course(conn):
-    pass
+    print('Which class?')
+    course_name = input().upper()
+    print('Which semester? (e.g. F19)')
+    course_semester = input().upper()
+    db.create_course(conn, course_name, course_semester)
+    # Update assignment weights
+    weights = {}
+    while True:
+        print("Enter an assignment type ('Done' to exit): ")
+        assignment_type = input().lower()
+        if assignment_type == 'done':
+            break
+        print('Enter the weight (e.g. .3): ')
+        assignment_weight = float(input())
+        weights[assignment_type] = assignment_weight
+    db.update_course(conn, course_name, weights)
 
 
 def add_assignment(conn):
