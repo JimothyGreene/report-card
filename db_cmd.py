@@ -33,7 +33,7 @@ def create_course_table(conn, course_name):
     conn.commit()
 
 
-def add_course(conn, course_name, semester):
+def create_course(conn, course_name, semester):
     c = conn.cursor()
     if check_new(conn, course_name):
         create_course_table(conn, course_name)
@@ -42,14 +42,14 @@ def add_course(conn, course_name, semester):
         conn.commit()
 
 
-def update_course(conn, course_name, assignment_info):
+def update_course(conn, course_name, assignment_weights):
     c = conn.cursor()
-    assignments = assignment_info.keys()
+    assignments = assignment_weights.keys()
     for assignment in assignments:
         c.execute(f'INSERT INTO {course_name} VALUES (?, ?, ?)',
                   [assignment,
-                   assignment_info[assignment],
-                   get_course_id(course_name)])
+                   assignment_weights[assignment],
+                   get_course_id(conn, course_name)])
     conn.commit()
 
 
@@ -66,9 +66,14 @@ def create_assignment_table(conn):
     )''')
 
 
-def add_assignment(conn, assignment_name, assignment_grade, course_name):
+def create_assignment(conn, assignment_info, course_name):
     c = conn.cursor()
-    c.execute(f'INSERT INTO Assignments VALUES (?, )')
+    c.execute(f'INSERT INTO Assignments VALUES (?, ?, ?, ?)',
+              [assignment_info[0],
+               assignment_info[1],
+               assignment_info[2],
+               get_course_id(conn, course_name)])
+    conn.commit()
 
 
 def check_new(conn, course_name):
