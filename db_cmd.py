@@ -46,10 +46,13 @@ def update_course(conn, course_name, assignment_weights):
     c = conn.cursor()
     assignments = assignment_weights.keys()
     for assignment in assignments:
-        c.execute(f'INSERT INTO {course_name} VALUES (?, ?, ?)',
-                  [assignment,
-                   assignment_weights[assignment],
-                   get_course_id(conn, course_name)])
+        c.execute(f'SELECT * FROM {course_name} WHERE assignment_type = ?',
+                  [assignment])
+        if not c.fetchall():
+            c.execute(f'INSERT INTO {course_name} VALUES (?, ?, ?)',
+                      [assignment,
+                       assignment_weights[assignment],
+                       get_course_id(conn, course_name)])
     conn.commit()
 
 
@@ -77,6 +80,7 @@ def create_assignment_table(conn):
             REFERENCES Courses (course_id)
                 ON DELETE CASCADE
     )''')
+    conn.commit()
 
 
 def create_assignment(conn, assignment_info, course_name):
