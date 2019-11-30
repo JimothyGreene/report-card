@@ -53,6 +53,19 @@ def update_course(conn, course_name, assignment_weights):
     conn.commit()
 
 
+def get_course_weights(conn, course_name):
+    c = conn.cursor()
+    c.execute(f'SELECT * FROM {course_name}')
+    return c.fetchall()
+
+
+def get_course_id(conn, course_name):
+    c = conn.cursor()
+    c.execute('SELECT * FROM Courses WHERE course_name = ?',
+              [course_name])
+    return c.fetchone()[0]
+
+
 def create_assignment_table(conn):
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS Assignments (
@@ -68,7 +81,7 @@ def create_assignment_table(conn):
 
 def create_assignment(conn, assignment_info, course_name):
     c = conn.cursor()
-    c.execute(f'INSERT INTO Assignments VALUES (?, ?, ?, ?)',
+    c.execute('INSERT INTO Assignments VALUES (?, ?, ?, ?)',
               [assignment_info[0],
                assignment_info[1],
                assignment_info[2],
@@ -76,15 +89,15 @@ def create_assignment(conn, assignment_info, course_name):
     conn.commit()
 
 
+def get_assignments(conn, course_name):
+    c = conn.cursor()
+    c.execute('SELECT * FROM Assignments WHERE course_id = ?',
+              [get_course_id(conn, course_name)])
+    return c.fetchall()
+
+
 def check_new(conn, course_name):
     c = conn.cursor()
     c.execute('SELECT * FROM Courses WHERE course_name = ?',
               [course_name])
     return False if c.fetchall() else True
-
-
-def get_course_id(conn, course_name):
-    c = conn.cursor()
-    c.execute('SELECT * FROM Courses WHERE course_name = ?',
-              [course_name])
-    return c.fetchone()[0]

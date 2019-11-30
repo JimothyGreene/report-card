@@ -36,7 +36,25 @@ def main():
 
 
 def check_grades(conn):
-    pass
+    print('Which class?')
+    course_name = input().upper()
+    assignments = db.get_assignments(conn, course_name)
+    for assignment in assignments:
+        print(f'{assignment[0]}: {assignment[2]}')
+    # Calculate average based on weights
+    course_weights = db.get_course_weights(conn, course_name)
+    weights_dict = {}
+    print(course_weights)
+    for weight in course_weights:
+        weights_dict[weight[0]] = weight[1]
+    average = 0
+    for assignment_type in weights_dict.keys():
+        weight = weights_dict[assignment_type]
+        for assignment in assignments:
+            if assignment_type == assignment[1]:
+                average += assignment[2]*weight
+    print(f'Total Grade: {average}')
+    # TODO: Correct algorithm for determining overall average
 
 
 def check_gpa(conn):
