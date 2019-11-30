@@ -33,18 +33,6 @@ def create_course_table(conn, course_name):
     conn.commit()
 
 
-def create_assignment_table(conn):
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS Assignments (
-        assignment_type text NOT NULL,
-        assignment_grade float NOT NULL,
-        course_id integer NOT NULL,
-        FOREIGN KEY (course_id)
-            REFERENCES Courses (course_id)
-                ON DELETE CASCADE
-    )''')
-
-
 def add_course(conn, course_name, semester):
     c = conn.cursor()
     if check_new(conn, course_name):
@@ -54,8 +42,33 @@ def add_course(conn, course_name, semester):
         conn.commit()
 
 
-def update_course(conn, course_name):
-    pass
+def update_course(conn, course_name, assignment_info):
+    c = conn.cursor()
+    assignments = assignment_info.keys()
+    for assignment in assignments:
+        c.execute(f'INSERT INTO {course_name} VALUES (?, ?, ?)',
+                  [assignment,
+                   assignment_info[assignment],
+                   get_course_id(course_name)])
+    conn.commit()
+
+
+def create_assignment_table(conn):
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS Assignments (
+        assignment_name text NOT NULL,
+        assignment_type text NOT NULL,
+        assignment_grade float NOT NULL,
+        course_id integer NOT NULL,
+        FOREIGN KEY (course_id)
+            REFERENCES Courses (course_id)
+                ON DELETE CASCADE
+    )''')
+
+
+def add_assignment(conn, assignment_name, assignment_grade, course_name):
+    c = conn.cursor()
+    c.execute(f'INSERT INTO Assignments VALUES (?, )')
 
 
 def check_new(conn, course_name):
@@ -63,3 +76,10 @@ def check_new(conn, course_name):
     c.execute('SELECT * FROM Courses WHERE course_name = ?',
               [course_name])
     return False if c.fetchall() else True
+
+
+def get_course_id(conn, course_name):
+    c = conn.cursor()
+    c.execute('SELECT * FROM Courses WHERE course_name = ?',
+              [course_name])
+    return c.fetchone()[0]
