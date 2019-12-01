@@ -15,7 +15,18 @@ def create_main_table(conn):
     c.execute('''CREATE TABLE IF NOT EXISTS Courses (
         course_id integer PRIMARY KEY,
         course_name text NOT NULL,
-        semester text NOT NULL
+        semester text NOT NULL,
+        A float,
+        Am float,
+        Bp float,
+        B float,
+        Bm float,
+        Cp float,
+        C float,
+        Cm float,
+        Dp float,
+        D float,
+        Dm float
     )''')
     conn.commit()
 
@@ -42,7 +53,7 @@ def create_course(conn, course_name, semester):
         conn.commit()
 
 
-def update_course(conn, course_name, assignment_weights):
+def set_course_weights(conn, course_name, assignment_weights):
     c = conn.cursor()
     assignments = assignment_weights.keys()
     for assignment in assignments:
@@ -53,6 +64,15 @@ def update_course(conn, course_name, assignment_weights):
                       [assignment,
                        assignment_weights[assignment],
                        get_course_id(conn, course_name)])
+    conn.commit()
+
+
+def set_course_cutoffs(conn, course_name, cutoffs):
+    c = conn.cursor()
+    cutoff_grades = list(cutoffs)
+    c.execute(f'''INSERT INTO {course_name} VALUES
+              (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+              cutoff_grades)
     conn.commit()
 
 
@@ -71,6 +91,15 @@ def get_course_id(conn, course_name):
     c.execute('SELECT * FROM Courses WHERE course_name = ?',
               [course_name])
     return c.fetchone()[0]
+
+
+def get_course_list(conn):
+    c = conn.cursor()
+    c.execute('SELECT * FROM Courses')
+    course_list = {}
+    for course in c.fetchall():
+        course_list[course[0]] = course[1]
+    return course_list
 
 
 def create_assignment_table(conn):

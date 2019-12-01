@@ -38,16 +38,8 @@ def main():
     conn.close()
 
 
-def check_grades(conn):
-    print('Which class?')
-    course_name = input().upper()
-    if not db.check_course_exists(conn, course_name):
-        print('That course does not exist')
-        return
+def total_grade(conn, course_name):
     assignments = db.get_assignments(conn, course_name)
-    for assignment in assignments:
-        print(f'{assignment[0]}: {assignment[2]}')
-    # Calculate average based on weights
     weights = db.get_course_weights(conn, course_name)
     average = 0
     weight_sum = 0
@@ -60,11 +52,36 @@ def check_grades(conn):
                 average += assignment[2]*weight
             if check == -1:
                 weight_sum += weight
-    print(f'Total Grade: {average/weight_sum}')
+    return average/weight_sum
+
+
+def check_grades(conn):
+    print('Which class?')
+    course_name = input().upper()
+    if not db.check_course_exists(conn, course_name):
+        print('That course does not exist')
+        return
+    assignments = db.get_assignments(conn, course_name)
+    for assignment in assignments:
+        print(f'{assignment[0]}: {assignment[2]}')
+    print(f'Total Grade: {total_grade(conn, course_name)}')
 
 
 def check_gpa(conn):
-    pass
+    total_credit_hours = 0
+    weighted_sum = 0
+    course_list = db.get_course_list(conn)
+    for course in course_list.keys():
+        credit_hours = 0
+        course_name = course_list[course]
+        course_split = list(course_name)
+        for ch in course_split:
+            if ch.isdigit():
+                credit_hours = int(ch)
+        grade = total_grade(conn, course_name)
+        weighted_sum += grade*credit_hours
+        total_credit_hours += credit_hours
+    print(f'GPA: {weighted_sum/total_credit_hours}')
 
 
 def add_course(conn):
@@ -76,7 +93,7 @@ def add_course(conn):
     print('Which semester? (e.g. F19)')
     course_semester = input().upper()
     db.create_course(conn, course_name, course_semester)
-    # Update assignment weights
+    # Set assignment weights
     weights = {}
     while True:
         print("Enter an assignment type ('Done' to exit): ")
@@ -86,7 +103,15 @@ def add_course(conn):
         print('Enter the weight (e.g. .3): ')
         assignment_weight = float(input())
         weights[assignment_type] = assignment_weight
-    db.update_course(conn, course_name, weights)
+    db.set_course_weights(conn, course_name, weights)
+    letter_grades = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-']
+    cutoff_list = []
+    for letter in letter_grades:
+        print(f"What is the cutoff for a(n) {letter}? ('None' for not used)")
+        cutoff = input()
+        cutoff = float(cutoff) if cutoff is not None else cutoff
+        cutoff_list.append(cutoff)
+    db.set_course_cutoffs(conn, course_name, cutoff_list)
 
 
 def add_assignment(conn):
