@@ -35,7 +35,7 @@ def create_course_table(conn, course_name):
 
 def create_course(conn, course_name, semester):
     c = conn.cursor()
-    if check_new(conn, course_name):
+    if not check_course_exists(conn, course_name):
         create_course_table(conn, course_name)
         c.execute('INSERT INTO Courses VALUES (?, ?, ?)',
                   [None, course_name, semester])
@@ -59,7 +59,11 @@ def update_course(conn, course_name, assignment_weights):
 def get_course_weights(conn, course_name):
     c = conn.cursor()
     c.execute(f'SELECT * FROM {course_name}')
-    return c.fetchall()
+    course_info = c.fetchall()
+    weights = {}
+    for weight in course_info:
+        weights[weight[0]] = weight[1]
+    return weights
 
 
 def get_course_id(conn, course_name):
@@ -100,8 +104,15 @@ def get_assignments(conn, course_name):
     return c.fetchall()
 
 
-def check_new(conn, course_name):
+def check_course_exists(conn, course_name):
     c = conn.cursor()
     c.execute('SELECT * FROM Courses WHERE course_name = ?',
               [course_name])
-    return False if c.fetchall() else True
+    return True if c.fetchall() else False
+
+
+def check_assignment_exists(conn, course_name, assignment_type):
+    c = conn.cursor()
+    c.execute(f'SELECT * FROM {course_name}, WHERE assignment_type = ?',
+              [assignment_type])
+    return True if c.fetchall() else False

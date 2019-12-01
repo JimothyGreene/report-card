@@ -41,18 +41,18 @@ def main():
 def check_grades(conn):
     print('Which class?')
     course_name = input().upper()
+    if not db.check_course_exists(conn, course_name):
+        print('That course does not exist')
+        return
     assignments = db.get_assignments(conn, course_name)
     for assignment in assignments:
         print(f'{assignment[0]}: {assignment[2]}')
     # Calculate average based on weights
-    course_weights = db.get_course_weights(conn, course_name)
-    weights_dict = {}
-    for weight in course_weights:
-        weights_dict[weight[0]] = weight[1]
+    weights = db.get_course_weights(conn, course_name)
     average = 0
     weight_sum = 0
-    for assignment_type in weights_dict.keys():
-        weight = weights_dict[assignment_type]
+    for assignment_type in weights.keys():
+        weight = weights[assignment_type]
         for assignment in assignments:
             check = 0
             if assignment_type == assignment[1]:
@@ -61,7 +61,6 @@ def check_grades(conn):
             if check == -1:
                 weight_sum += weight
     print(f'Total Grade: {average/weight_sum}')
-    # TODO: Correct algorithm for determining overall average
 
 
 def check_gpa(conn):
@@ -71,6 +70,9 @@ def check_gpa(conn):
 def add_course(conn):
     print('Which class?')
     course_name = input().upper()
+    if db.check_course_exists(conn, course_name):
+        print('That course already exists')
+        return
     print('Which semester? (e.g. F19)')
     course_semester = input().upper()
     db.create_course(conn, course_name, course_semester)
@@ -90,11 +92,18 @@ def add_course(conn):
 def add_assignment(conn):
     print('Which class?')
     course_name = input().upper()
+    if not db.check_course_exists(conn, course_name):
+        print('That course does not exist')
+        return
     assignment_info = []
     print('Enter the assignment name: ')
     assignment_info.append(input().lower())
     print('Enter the assignment type: ')
-    assignment_info.append(input().lower())
+    assignment_type = input().lower()
+    if db.check_assignment_exists(conn, course_name, assignment_type):
+        print('That assignment type does not exist')
+        return
+    assignment_info.append(assignment_type)
     print('Enter the grade')
     assignment_info.append(float(input().lower()))
     db.create_assignment(conn, assignment_info, course_name)
