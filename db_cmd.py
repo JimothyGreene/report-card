@@ -44,12 +44,13 @@ def create_course_table(conn, course_name):
     conn.commit()
 
 
-def create_course(conn, course_name, semester):
+def create_course(conn, course_name, semester, cutoff_list):
     c = conn.cursor()
     if not check_course_exists(conn, course_name):
         create_course_table(conn, course_name)
-        c.execute('INSERT INTO Courses VALUES (?, ?, ?)',
-                  [None, course_name, semester])
+        c.execute('''INSERT INTO Courses VALUES (?, ?, ?, ?, ?, ?, ?,
+                                                 ?, ?, ?, ?, ?, ?, ?)''',
+                  [None, course_name, semester] + cutoff_list)
         conn.commit()
 
 
@@ -67,13 +68,11 @@ def set_course_weights(conn, course_name, assignment_weights):
     conn.commit()
 
 
-def set_course_cutoffs(conn, course_name, cutoffs):
+def get_course_cuttoffs(conn, course_name):
     c = conn.cursor()
-    cutoff_grades = list(cutoffs)
-    c.execute(f'''INSERT INTO {course_name} VALUES
-              (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-              cutoff_grades)
-    conn.commit()
+    c.execute(f'SELECT * FROM Courses WHERE course_name = ?',
+              [course_name])
+    return c.fetchone()[3:]
 
 
 def get_course_weights(conn, course_name):
@@ -136,12 +135,12 @@ def get_assignments(conn, course_name):
 def check_course_exists(conn, course_name):
     c = conn.cursor()
     c.execute('SELECT * FROM Courses WHERE course_name = ?',
-              [course_name])
+              [course_name.upper()])
     return True if c.fetchall() else False
 
 
 def check_assignment_exists(conn, course_name, assignment_type):
     c = conn.cursor()
-    c.execute(f'SELECT * FROM {course_name}, WHERE assignment_type = ?',
-              [assignment_type])
+    c.execute(f'SELECT * FROM {course_name} WHERE assignment_type = ?',
+              [assignment_type.lower()])
     return True if c.fetchall() else False
