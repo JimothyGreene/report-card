@@ -3,6 +3,8 @@ import db_cmd as db
 database = 'report-card.db'
 letter_grades = ['A', 'A-', 'B+', 'B', 'B-', 'C+',
                  'C', 'C-', 'D+', 'D', 'D-']
+default_cutoffs = [92.5, 89.5, 86.5, 82.5, 79.5, 76.5,
+                   72.5, 69.5, 66.5, 62.5, 59.5]
 
 
 def main():
@@ -80,18 +82,14 @@ def check_gpa(conn):
         for ch in course_split:
             if ch.isdigit():
                 credit_hours = int(ch)
-                print(f'Credit hours: {credit_hours}')
                 break
         grade = total_grade(conn, course_name)
         letter_cutoffs = db.get_course_cuttoffs(conn, course_name)
         grade_points = 0
-        print(letter_cutoffs[0])
         for i in range(0, len(letter_cutoffs)):
             cutoff = letter_cutoffs[i]
-            print(f'Cutoff: {cutoff}')
             if cutoff is not None and grade >= cutoff:
-                grade_points = 4-i
-                print(f'Grade Points: {grade_points}')
+                grade_points = 4-(i/3)
                 break
             else:
                 continue
@@ -109,15 +107,23 @@ def add_course(conn):
     print('Which semester? (e.g. F19)')
     course_semester = input().upper()
     cutoff_list = []
-    for letter in letter_grades:
-        print(f"What is the cutoff for a(n) {letter}? ('None' for not used)")
-        cutoff = input().lower()
-        if cutoff == 'none':
-            cutoff = None
-        else:
-            cutoff = float(cutoff)
-        cutoff_list.append(cutoff)
-    db.create_course(conn, course_name, course_semester, cutoff_list)
+    print('Are the grade cutoffs different from the default? (y/n)')
+    print(default_cutoffs)
+    ans = input().lower()
+    if ans == 'y':
+        for letter in letter_grades:
+            print(f"What is the cutoff for a(n) {letter}? ('None' if unused)")
+            cutoff = input().lower()
+            if cutoff == 'none':
+                cutoff = None
+            else:
+                cutoff = float(cutoff)
+            cutoff_list.append(cutoff)
+        db.create_course(conn, course_name, course_semester, cutoff_list)
+    elif ans == 'n':
+        db.create_course(conn, course_name, course_semester, default_cutoffs)
+    else:
+        print('That is not a valid reponse')
     # Set assignment weights
     weights = {}
     while True:
