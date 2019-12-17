@@ -12,9 +12,12 @@ def main():
     db.create_main_table(conn)
     db.create_assignment_table(conn)
 
+    c = conn.cursor()
+    c.execute('PRAGMA foreign_keys = ON')
+
     print('Welcome to your report card. What would you like to do? ')
     while True:
-        print("Would you like to 'Check', 'Add', or 'Exit'?")
+        print("Would you like to 'Check', 'Add', 'Delete' or 'Exit'?")
         command = input().lower()
         if command == 'check':
             print("Would you like to check 'Grades' or 'GPA'?")
@@ -32,6 +35,15 @@ def main():
                 add_course(conn)
             elif add_command == 'assignment':
                 add_assignment(conn)
+            else:
+                print('That is not a valid command. Please try again')
+        elif command == 'delete':
+            print("Would you like to delete a 'Course' or an 'Assignment'?")
+            add_command = input().lower()
+            if add_command == 'course':
+                delete_course(conn)
+            elif add_command == 'assignment':
+                delete_assignment(conn)
             else:
                 print('That is not a valid command. Please try again')
         elif command == 'exit':
@@ -124,7 +136,6 @@ def add_course(conn):
         db.create_course(conn, course_name, course_semester, default_cutoffs)
     else:
         print('That is not a valid reponse')
-    # Set assignment weights
     weights = {}
     while True:
         print("Enter an assignment type ('Done' to exit): ")
@@ -148,13 +159,42 @@ def add_assignment(conn):
     assignment_info.append(input().lower())
     print('Enter the assignment type: ')
     assignment_type = input().lower()
-    if not db.check_assignment_exists(conn, course_name, assignment_type):
+    if not db.check_assignment_type_exists(conn, course_name, assignment_type):
         print('That assignment type does not exist')
         return
     assignment_info.append(assignment_type)
     print('Enter the grade')
     assignment_info.append(float(input().lower()))
     db.create_assignment(conn, assignment_info, course_name)
+
+
+def delete_course(conn):
+    print('Which class?')
+    course_name = input().upper()
+    if not db.check_course_exists(conn, course_name):
+        print('That course does not exist')
+        return
+    print(f'Are you sure you want to remove {course_name}? (y/n)')
+    if input().lower() == 'y':
+        db.remove_course(conn, course_name)
+        print(f'{course_name} was removed')
+    else:
+        print(f'{course_name} was not removed')
+
+
+def delete_assignment(conn):
+    print('Which class?')
+    course_name = input().upper()
+    if not db.check_course_exists(conn, course_name):
+        print('That course does not exist')
+        return
+    print('Which assignment?')
+    assignment_name = input().lower()
+    if not db.check_assignment_exists(conn, course_name, assignment_name):
+        print('That assignment does not exist')
+        return
+    db.remove_assignment(conn, assignment_name, course_name)
+    print(f'{assignment_name} was removed')
 
 
 if __name__ == '__main__':

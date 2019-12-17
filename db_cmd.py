@@ -54,6 +54,21 @@ def create_course(conn, course_name, semester, cutoff_list):
         conn.commit()
 
 
+def remove_course_table(conn, course_name):
+    c = conn.cursor()
+    c.execute(f'DROP TABLE IF EXISTS {course_name}')
+    conn.commit()
+
+
+def remove_course(conn, course_name):
+    c = conn.cursor()
+    if check_course_exists(conn, course_name):
+        remove_course_table(conn, course_name)
+        c.execute('DELETE FROM Courses WHERE course_name = ?',
+                  [course_name])
+    conn.commit()
+
+
 def set_course_weights(conn, course_name, assignment_weights):
     c = conn.cursor()
     assignments = assignment_weights.keys()
@@ -125,6 +140,14 @@ def create_assignment(conn, assignment_info, course_name):
     conn.commit()
 
 
+def remove_assignment(conn, assignment_name, course_name):
+    c = conn.cursor()
+    c.execute('''DELETE FROM Assignments WHERE assignment_name = ?
+                 AND course_id = ?''',
+              [assignment_name, get_course_id(conn, course_name)])
+    conn.commit()
+
+
 def get_assignments(conn, course_name):
     c = conn.cursor()
     c.execute('SELECT * FROM Assignments WHERE course_id = ?',
@@ -139,8 +162,16 @@ def check_course_exists(conn, course_name):
     return True if c.fetchall() else False
 
 
-def check_assignment_exists(conn, course_name, assignment_type):
+def check_assignment_type_exists(conn, course_name, assignment_type):
     c = conn.cursor()
     c.execute(f'SELECT * FROM {course_name} WHERE assignment_type = ?',
               [assignment_type.lower()])
+    return True if c.fetchall() else False
+
+
+def check_assignment_exists(conn, course_name, assignment_name):
+    c = conn.cursor()
+    c.execute(f'''SELECT * FROM Assignments WHERE assignment_name = ?
+                AND course_id = ?''',
+              [assignment_name, get_course_id(conn, course_name)])
     return True if c.fetchall() else False
