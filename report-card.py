@@ -119,6 +119,7 @@ def add_course(conn):
     print('Which semester? (e.g. F19)')
     course_semester = input().upper()
     cutoff_list = []
+    drops_list = []
     print('Are the grade cutoffs different from the default? (y/n)')
     print(default_cutoffs)
     ans = input().lower()
@@ -131,9 +132,8 @@ def add_course(conn):
             else:
                 cutoff = float(cutoff)
             cutoff_list.append(cutoff)
-        db.create_course(conn, course_name, course_semester, cutoff_list)
     elif ans == 'n':
-        db.create_course(conn, course_name, course_semester, default_cutoffs)
+        cutoff_list = default_cutoffs
     else:
         print('That is not a valid reponse')
     weights = {}
@@ -145,7 +145,10 @@ def add_course(conn):
         print('Enter the weight (e.g. .3): ')
         assignment_weight = float(input())
         weights[assignment_type] = assignment_weight
-    db.set_course_weights(conn, course_name, weights)
+        print('How many drops are there?')
+        drops_list.append(int(input()))
+    db.create_course(conn, course_name, course_semester, cutoff_list)
+    db.set_assignment_info(conn, course_name, weights, drops_list)
 
 
 def add_assignment(conn):

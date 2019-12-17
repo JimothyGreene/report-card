@@ -36,10 +36,7 @@ def create_course_table(conn, course_name):
     c.execute(f'''CREATE TABLE IF NOT EXISTS {course_name} (
         assignment_type text NOT NULL,
         assignment_weight float NOT NULL,
-        course_id integer NOT NULL,
-        FOREIGN KEY (course_id)
-            REFERENCES Courses (course_id)
-                ON DELETE CASCADE
+        drops integer NOT NULL
     )''')
     conn.commit()
 
@@ -69,9 +66,10 @@ def remove_course(conn, course_name):
     conn.commit()
 
 
-def set_course_weights(conn, course_name, assignment_weights):
+def set_assignment_info(conn, course_name, assignment_weights, drops_list):
     c = conn.cursor()
     assignments = assignment_weights.keys()
+    i = 0
     for assignment in assignments:
         c.execute(f'SELECT * FROM {course_name} WHERE assignment_type = ?',
                   [assignment])
@@ -79,7 +77,8 @@ def set_course_weights(conn, course_name, assignment_weights):
             c.execute(f'INSERT INTO {course_name} VALUES (?, ?, ?)',
                       [assignment,
                        assignment_weights[assignment],
-                       get_course_id(conn, course_name)])
+                       drops_list[i]])
+        i += 1
     conn.commit()
 
 
