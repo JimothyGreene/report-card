@@ -199,6 +199,10 @@ def delete_assignment(conn):
     db.remove_assignment(conn, assignment_name, course_name)
     print(f'{assignment_name} was removed')
 
+# TODO: Create display function for easy viewing
+# TODO: Make adding multiple assignments easier (while loops)
+# TODO: Implement drops when calculating grades/gpa
+
 
 if __name__ == '__main__':
     main()
