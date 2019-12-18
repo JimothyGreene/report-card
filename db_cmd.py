@@ -154,6 +154,12 @@ def get_assignments(conn, course_name):
     return c.fetchall()
 
 
+def get_assignment_types(conn, course_name):
+    c = conn.cursor()
+    c.execute(f'SELECT * FROM {course_name}')
+    return c.fetchall()
+
+
 def check_course_exists(conn, course_name):
     c = conn.cursor()
     c.execute('SELECT * FROM Courses WHERE course_name = ?',

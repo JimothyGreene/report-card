@@ -68,7 +68,7 @@ def total_grade(conn, course_name):
                 average += assignment[2]*weight
             if check == -1:
                 weight_sum += weight
-    return average/weight_sum
+    return average/weight_sum if weight_sum != 0 else 0
 
 
 def check_grades(conn):
@@ -77,10 +77,7 @@ def check_grades(conn):
     if not db.check_course_exists(conn, course_name):
         print('That course does not exist')
         return
-    assignments = db.get_assignments(conn, course_name)
-    for assignment in assignments:
-        print(f'{assignment[0]}: {assignment[2]}')
-    print(f'Total Grade: {total_grade(conn, course_name)}')
+    display_grades(conn, course_name)
 
 
 def check_gpa(conn):
@@ -96,6 +93,8 @@ def check_gpa(conn):
                 credit_hours = int(ch)
                 break
         grade = total_grade(conn, course_name)
+        if grade == 0:
+            continue
         letter_cutoffs = db.get_course_cuttoffs(conn, course_name)
         grade_points = 0
         for i in range(0, len(letter_cutoffs)):
@@ -107,7 +106,9 @@ def check_gpa(conn):
                 continue
         weighted_sum += grade_points*credit_hours
         total_credit_hours += credit_hours
-    print(f'GPA: {weighted_sum/total_credit_hours}')
+    print('---------')
+    print('GPA: %3.2f' % (weighted_sum/total_credit_hours))
+    print('---------')
 
 
 def add_course(conn):
@@ -149,6 +150,7 @@ def add_course(conn):
         drops_list.append(int(input()))
     db.create_course(conn, course_name, course_semester, cutoff_list)
     db.set_assignment_info(conn, course_name, weights, drops_list)
+    print(f'{course_name} has been added')
 
 
 def add_assignment(conn):
@@ -169,6 +171,7 @@ def add_assignment(conn):
     print('Enter the grade')
     assignment_info.append(float(input().lower()))
     db.create_assignment(conn, assignment_info, course_name)
+    print(f'{assignment_info[0]} has been added')
 
 
 def delete_course(conn):
@@ -199,7 +202,24 @@ def delete_assignment(conn):
     db.remove_assignment(conn, assignment_name, course_name)
     print(f'{assignment_name} was removed')
 
-# TODO: Create display function for easy viewing
+
+def display_grades(conn, course_name):
+    assignments = db.get_assignments(conn, course_name)
+    assignment_types = db.get_assignment_types(conn, course_name)
+    print('===============')
+    print(f'{course_name} grades:')
+    print('===============')
+    for assignment_type in assignment_types:
+        print('-------------------')
+        print(assignment_type[0].title())
+        print('-------------------')
+        for assignment in assignments:
+            if assignment[1] == assignment_type[0]:
+                print(f'{assignment[0].title()}: {assignment[2]}')
+    print('-------------------')
+    print('Total Grade: %5.2f' % (total_grade(conn, course_name)))
+    print('-------------------')
+
 # TODO: Make adding multiple assignments easier (while loops)
 # TODO: Implement drops when calculating grades/gpa
 
