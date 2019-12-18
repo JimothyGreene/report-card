@@ -72,6 +72,7 @@ def main():
 def total_grade(conn, course_name):
     assignments = db.get_assignments(conn, course_name)
     weights = db.get_course_weights(conn, course_name)
+    assignment_info = db.get_assignment_types(conn, course_name)
     average = 0
     weight_sum = 0
     for assignment_type in weights.keys():
@@ -260,6 +261,9 @@ def display_grades(conn, course_name):
                 print(f'{assignment[0].title()}: {assignment[2]}')
 
 # TODO: Implement drops when calculating grades/gpa
+    # Make get_assignment_of_type() in db_cmd (utilize in total_grade())
+# TODO: Implement edit functions
+# TODO: Implement 'What If?' grade calculations
 
 
 if __name__ == '__main__':
