@@ -20,32 +20,47 @@ def main():
         print("Would you like to 'Check', 'Add', 'Delete' or 'Exit'?")
         command = input().lower()
         if command == 'check':
-            print("Would you like to check 'Grades' or 'GPA'?")
-            check_command = input().lower()
-            if check_command == 'grades':
-                check_grades(conn)
-            elif check_command == 'gpa':
-                check_gpa(conn)
-            else:
-                print('That is not a valid command. Please try again')
+            while True:
+                print("Would you like to check 'Grades' or 'GPA'? ",
+                      end='')
+                print("('Done' to stop)")
+                check_command = input().lower()
+                if check_command == 'grades':
+                    check_grades(conn)
+                elif check_command == 'gpa':
+                    check_gpa(conn)
+                elif check_command == 'done':
+                    break
+                else:
+                    print('That is not a valid command. Please try again')
         elif command == 'add':
-            print("Would you like to add a 'Course' or an 'Assignment'?")
-            add_command = input().lower()
-            if add_command == 'course':
-                add_course(conn)
-            elif add_command == 'assignment':
-                add_assignment(conn)
-            else:
-                print('That is not a valid command. Please try again')
+            while True:
+                print("Would you like to add a 'Course' or 'Assignment'? ",
+                      end='')
+                print("('Done' to stop)")
+                add_command = input().lower()
+                if add_command == 'course':
+                    add_course(conn)
+                elif add_command == 'assignment':
+                    add_assignment(conn)
+                elif add_command == 'done':
+                    break
+                else:
+                    print('That is not a valid command. Please try again')
         elif command == 'delete':
-            print("Would you like to delete a 'Course' or an 'Assignment'?")
-            add_command = input().lower()
-            if add_command == 'course':
-                delete_course(conn)
-            elif add_command == 'assignment':
-                delete_assignment(conn)
-            else:
-                print('That is not a valid command. Please try again')
+            while True:
+                print("Would you like to delete a 'Course' or 'Assignment'? ",
+                      end='')
+                print("('Done' to stop)")
+                delete_command = input().lower()
+                if delete_command == 'course':
+                    delete_course(conn)
+                elif delete_command == 'assignment':
+                    delete_assignment(conn)
+                elif delete_command == 'done':
+                    break
+                else:
+                    print('That is not a valid command. Please try again')
         elif command == 'exit':
             print('Shutting down...')
             break
@@ -78,6 +93,9 @@ def check_grades(conn):
         print('That course does not exist')
         return
     display_grades(conn, course_name)
+    print('-------------------')
+    print('Total Grade: %5.2f' % (total_grade(conn, course_name)))
+    print('-------------------')
 
 
 def check_gpa(conn):
@@ -112,7 +130,7 @@ def check_gpa(conn):
 
 
 def add_course(conn):
-    print('Which class?')
+    print('Enter the course name:')
     course_name = input().upper()
     if db.check_course_exists(conn, course_name):
         print('That course already exists')
@@ -121,22 +139,30 @@ def add_course(conn):
     course_semester = input().upper()
     cutoff_list = []
     drops_list = []
-    print('Are the grade cutoffs different from the default? (y/n)')
-    print(default_cutoffs)
-    ans = input().lower()
-    if ans == 'y':
-        for letter in letter_grades:
-            print(f"What is the cutoff for a(n) {letter}? ('None' if unused)")
-            cutoff = input().lower()
-            if cutoff == 'none':
-                cutoff = None
-            else:
-                cutoff = float(cutoff)
-            cutoff_list.append(cutoff)
-    elif ans == 'n':
-        cutoff_list = default_cutoffs
-    else:
-        print('That is not a valid reponse')
+    while True:
+        print('Are the grade cutoffs different from the default? (y/n)')
+        print(default_cutoffs)
+        ans = input().lower()
+        if ans == 'y':
+            for letter in letter_grades:
+                while True:
+                    print(f"What is the cutoff for a {letter}? ", end='')
+                    print("('None' is valid)")
+                    cutoff = input().lower()
+                    if cutoff == 'none':
+                        cutoff_list.append(None)
+                        break
+                    elif float(cutoff) >= 0 and float(cutoff) <= 120:
+                        cutoff_list.append(float(cutoff))
+                        break
+                    else:
+                        print('That is not a valid cutoff')
+            break
+        elif ans == 'n':
+            cutoff_list = default_cutoffs
+            break
+        else:
+            print('That is not a valid reponse')
     weights = {}
     while True:
         print("Enter an assignment type ('Done' to exit): ")
@@ -154,24 +180,34 @@ def add_course(conn):
 
 
 def add_assignment(conn):
-    print('Which class?')
-    course_name = input().upper()
-    if not db.check_course_exists(conn, course_name):
-        print('That course does not exist')
-        return
-    assignment_info = []
-    print('Enter the assignment name: ')
-    assignment_info.append(input().lower())
-    print('Enter the assignment type: ')
-    assignment_type = input().lower()
-    if not db.check_assignment_type_exists(conn, course_name, assignment_type):
-        print('That assignment type does not exist')
-        return
-    assignment_info.append(assignment_type)
-    print('Enter the grade')
-    assignment_info.append(float(input().lower()))
-    db.create_assignment(conn, assignment_info, course_name)
-    print(f'{assignment_info[0]} has been added')
+    while True:
+        print("Which class? ('Done' to stop)")
+        course_name = input().upper()
+        if course_name == 'done':
+            break
+        if not db.check_course_exists(conn, course_name):
+            print('That course does not exist')
+            return
+        while True:
+            assignment_info = []
+            print("Enter the assignment name ('Done' to stop): ")
+            assignment_name = input().lower()
+            if assignment_name == 'done':
+                break
+            assignment_info.append(assignment_name)
+            while True:
+                print('Enter the assignment type: ')
+                assignment_type = input().lower()
+                if not db.check_assignment_type_exists(conn, course_name,
+                                                       assignment_type):
+                    print('That assignment type does not exist')
+                    continue
+                break
+            assignment_info.append(assignment_type)
+            print('Enter the grade')
+            assignment_info.append(float(input().lower()))
+            db.create_assignment(conn, assignment_info, course_name)
+            print(f'{assignment_info[0]} has been added')
 
 
 def delete_course(conn):
@@ -189,18 +225,24 @@ def delete_course(conn):
 
 
 def delete_assignment(conn):
-    print('Which class?')
-    course_name = input().upper()
-    if not db.check_course_exists(conn, course_name):
-        print('That course does not exist')
-        return
-    print('Which assignment?')
-    assignment_name = input().lower()
-    if not db.check_assignment_exists(conn, course_name, assignment_name):
-        print('That assignment does not exist')
-        return
-    db.remove_assignment(conn, assignment_name, course_name)
-    print(f'{assignment_name} was removed')
+    while True:
+        print("Which class? ('Done' to stop)")
+        course_name = input().upper()
+        if not db.check_course_exists(conn, course_name):
+            print('That course does not exist')
+            return
+        while True:
+            display_grades(conn, course_name)
+            print("Which assignment? ('Done' to stop)")
+            assignment_name = input().lower()
+            if assignment_name == 'done':
+                break
+            if not db.check_assignment_exists(conn, course_name,
+                                              assignment_name):
+                print('That assignment does not exist')
+                return
+            db.remove_assignment(conn, assignment_name, course_name)
+            print(f'{assignment_name} was removed')
 
 
 def display_grades(conn, course_name):
@@ -216,11 +258,7 @@ def display_grades(conn, course_name):
         for assignment in assignments:
             if assignment[1] == assignment_type[0]:
                 print(f'{assignment[0].title()}: {assignment[2]}')
-    print('-------------------')
-    print('Total Grade: %5.2f' % (total_grade(conn, course_name)))
-    print('-------------------')
 
-# TODO: Make adding multiple assignments easier (while loops)
 # TODO: Implement drops when calculating grades/gpa
 
 
