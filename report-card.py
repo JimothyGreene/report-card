@@ -34,7 +34,16 @@ def main():
                 print("('Done' to stop)")
                 check_command = input().lower()
                 if check_command == 'grades':
-                    check_grades(conn)
+                    print("Would you like to check a 'Course' or 'Semester'? ",
+                          end='')
+                    print("('Done' to stop)")
+                    grades_command = input().lower()
+                    if grades_command == 'course':
+                        check_grades(conn)
+                    elif grades_command == 'semester':
+                        display_courses(conn)
+                    else:
+                        print('That is not a valid command. Please try again')
                 elif check_command == 'gpa':
                     check_gpa(conn)
                 elif check_command == 'done':
@@ -107,7 +116,7 @@ def total_grade(conn, course_name):
             for assignment in assignments:
                 grades.append(assignment[2])
             grades.sort()
-            grades = grades[:drops*-1] if len(grades)>drops and drops else grades
+            grades = grades[drops:] if len(grades)>drops and drops else grades
             average += statistics.mean(grades)*weight
     return average/weight_sum if weight_sum != 0 else 0
 
@@ -230,7 +239,7 @@ def add_assignment(conn):
                     continue
                 break
             assignment_info.append(assignment_type)
-            print('Enter the grade')
+            print('Enter the grade:')
             assignment_info.append(float(input().lower()))
             db.create_assignment(conn, assignment_info, course_name)
             print(f'{assignment_info[0]} has been added')
@@ -313,6 +322,21 @@ def display_grades(conn, course_name):
         for assignment in assignments:
             if assignment[1] == assignment_type[0]:
                 print(f'{assignment[0].title()}: {assignment[2]}')
+
+
+def display_courses(conn):
+    print('Which semester? (e.g. F19)')
+    semester = input().upper()
+    semester_courses = db.get_course_semester_list(conn, semester)
+    if not semester_courses:
+        print('There are no courses for that semester')
+        return
+    print('=======================')
+    print(f'Grades for semester {semester}')
+    print('=======================')
+    for course in semester_courses:
+        print(f'{course}: %5.2f' % total_grade(conn, course))
+    print('=======================')
 
 # TODO: Implement edit functions for course
 

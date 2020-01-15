@@ -115,6 +115,16 @@ def get_course_list(conn):
     return course_list
 
 
+def get_course_semester_list(conn, semester):
+    c = conn.cursor()
+    c.execute('SELECT * FROM Courses WHERE semester = ?',
+              [semester])
+    course_list = []
+    for course in c.fetchall():
+        course_list.append(course[1])
+    return course_list
+
+
 def create_assignment_table(conn):
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS Assignments (
