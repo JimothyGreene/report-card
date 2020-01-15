@@ -25,7 +25,7 @@ def main():
     c.execute('PRAGMA foreign_keys = ON')
 
     while True:
-        print("Would you like to 'Check', 'Add', 'Delete' or 'Exit'?")
+        print("Would you like to 'Check', 'Add', 'Delete', 'Edit' or 'Exit'?")
         command = input().lower()
         if command == 'check':
             while True:
@@ -65,6 +65,21 @@ def main():
                     delete_course(conn)
                 elif delete_command == 'assignment':
                     delete_assignment(conn)
+                elif delete_command == 'done':
+                    break
+                else:
+                    print('That is not a valid command. Please try again')
+        elif command == 'edit':
+            while True:
+                print("Would you like to edit a 'Course' or 'Assignment'? ",
+                      end='')
+                print("('Done' to stop)")
+                delete_command = input().lower()
+                if delete_command == 'course':
+                    pass
+                    # edit course function
+                elif delete_command == 'assignment':
+                    edit_assignment(conn)
                 elif delete_command == 'done':
                     break
                 else:
@@ -256,6 +271,31 @@ def delete_assignment(conn):
             print(f'{assignment_name} was removed')
 
 
+def edit_assignment(conn):
+    while True:
+        print("Which class? ('Done' to stop)")
+        course_name = input().upper()
+        if not db.check_course_exists(conn, course_name):
+            print('That course does not exist')
+            return
+        while True:
+            display_grades(conn, course_name)
+            print("Which assignment? ('Done' to stop)")
+            assignment_name = input().lower()
+            if assignment_name == 'done':
+                break
+            if not db.check_assignment_exists(conn, course_name,
+                                              assignment_name):
+                print('That assignment does not exist')
+                return
+            print('What is the new assignment grade?')
+            new_grade = float(input())
+            assignment_info = db.get_assignment(conn, course_name, assignment_name)
+            assignment_info = (assignment_info[0], assignment_info[1], new_grade)
+            db.remove_assignment(conn, assignment_name, course_name)
+            db.create_assignment(conn, assignment_info, course_name)
+            print(f'{assignment_name} new grade is {new_grade}')
+
 def display_grades(conn, course_name):
     assignments = db.get_assignments(conn, course_name)
     assignment_types = db.get_assignment_types(conn, course_name)
@@ -270,8 +310,7 @@ def display_grades(conn, course_name):
             if assignment[1] == assignment_type[0]:
                 print(f'{assignment[0].title()}: {assignment[2]}')
 
-# TODO: Implement edit functions
-# TODO: Implement 'What If?' grade calculations
+# TODO: Implement edit functions for course
 
 
 if __name__ == '__main__':

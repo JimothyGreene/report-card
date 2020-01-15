@@ -147,6 +147,14 @@ def remove_assignment(conn, assignment_name, course_name):
     conn.commit()
 
 
+def get_assignment(conn, course_name, assignment_name):
+    c = conn.cursor()
+    c.execute('''SELECT * FROM Assignments WHERE course_id = ?
+                 AND assignment_name = ?''',
+              [get_course_id(conn, course_name), assignment_name])
+    return c.fetchone()
+
+
 def get_assignments(conn, course_name):
     c = conn.cursor()
     c.execute('SELECT * FROM Assignments WHERE course_id = ?',
