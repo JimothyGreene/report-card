@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "/home/jimothygreene/.virtualenvs/report-card/bin/python",
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": false
+}

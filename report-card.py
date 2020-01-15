@@ -1,4 +1,5 @@
 import db_cmd as db
+import statistics
 
 database = 'report-card.db'
 letter_grades = ['A', 'A-', 'B+', 'B', 'B-', 'C+',
@@ -70,20 +71,22 @@ def main():
 
 
 def total_grade(conn, course_name):
-    assignments = db.get_assignments(conn, course_name)
     weights = db.get_course_weights(conn, course_name)
-    assignment_info = db.get_assignment_types(conn, course_name)
     average = 0
     weight_sum = 0
     for assignment_type in weights.keys():
+        grades = []
+        drops = db.get_assignment_drops(conn, course_name, assignment_type)
         weight = weights[assignment_type]
-        for assignment in assignments:
-            check = 0
-            if assignment_type == assignment[1]:
-                check = -1
-                average += assignment[2]*weight
-            if check == -1:
-                weight_sum += weight
+        assignments = db.get_assignment_of_type(conn, course_name,
+                                                assignment_type)
+        if assignments:
+            weight_sum += weight
+            for assignment in assignments:
+                grades.append(assignment[2])
+            grades.sort()
+            grades = grades[:drops*-1] if len(grades)>drops else grades
+            average += statistics.mean(grades)*weight
     return average/weight_sum if weight_sum != 0 else 0
 
 
@@ -260,8 +263,6 @@ def display_grades(conn, course_name):
             if assignment[1] == assignment_type[0]:
                 print(f'{assignment[0].title()}: {assignment[2]}')
 
-# TODO: Implement drops when calculating grades/gpa
-    # Make get_assignment_of_type() in db_cmd (utilize in total_grade())
 # TODO: Implement edit functions
 # TODO: Implement 'What If?' grade calculations
 

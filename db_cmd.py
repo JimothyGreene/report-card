@@ -160,6 +160,21 @@ def get_assignment_types(conn, course_name):
     return c.fetchall()
 
 
+def get_assignment_of_type(conn, course_name, assignment_type):
+    c = conn.cursor()
+    c.execute('''SELECT * FROM Assignments WHERE course_id = ?
+                 AND assignment_type = ?''',
+              [get_course_id(conn, course_name), assignment_type])
+    return c.fetchall()
+
+
+def get_assignment_drops(conn, course_name, assignment_type):
+    c = conn.cursor()
+    c.execute(f'SELECT * FROM {course_name} WHERE assignment_type = ?',
+              [assignment_type])
+    return c.fetchone()[2]
+
+
 def check_course_exists(conn, course_name):
     c = conn.cursor()
     c.execute('SELECT * FROM Courses WHERE course_name = ?',
