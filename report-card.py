@@ -107,7 +107,7 @@ def total_grade(conn, course_name):
             for assignment in assignments:
                 grades.append(assignment[2])
             grades.sort()
-            grades = grades[:drops*-1] if len(grades)>drops else grades
+            grades = grades[:drops*-1] if len(grades)>drops and drops else grades
             average += statistics.mean(grades)*weight
     return average/weight_sum if weight_sum != 0 else 0
 
@@ -254,6 +254,8 @@ def delete_assignment(conn):
     while True:
         print("Which class? ('Done' to stop)")
         course_name = input().upper()
+        if course_name == 'done':
+            break
         if not db.check_course_exists(conn, course_name):
             print('That course does not exist')
             return
@@ -275,6 +277,8 @@ def edit_assignment(conn):
     while True:
         print("Which class? ('Done' to stop)")
         course_name = input().upper()
+        if course_name == 'done':
+            break
         if not db.check_course_exists(conn, course_name):
             print('That course does not exist')
             return
