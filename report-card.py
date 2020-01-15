@@ -1,7 +1,9 @@
 import db_cmd as db
 import statistics
+import shutil
 
 database = 'report-card.db'
+whatif = 'what-if.db'
 letter_grades = ['A', 'A-', 'B+', 'B', 'B-', 'C+',
                  'C', 'C-', 'D+', 'D', 'D-']
 default_cutoffs = [92.5, 89.5, 86.5, 82.5, 79.5, 76.5,
@@ -9,14 +11,19 @@ default_cutoffs = [92.5, 89.5, 86.5, 82.5, 79.5, 76.5,
 
 
 def main():
-    conn = db.create_connection(database)
+    print('Welcome to your report card. What would you like to do? ')
+    print('Do you want to look at what-if grades? (y/n)')
+    if input().lower() == 'y':
+        shutil.copyfile(database, whatif)
+        conn = db.create_connection(whatif)
+    else:
+        conn = db.create_connection(database)
     db.create_main_table(conn)
     db.create_assignment_table(conn)
 
     c = conn.cursor()
     c.execute('PRAGMA foreign_keys = ON')
 
-    print('Welcome to your report card. What would you like to do? ')
     while True:
         print("Would you like to 'Check', 'Add', 'Delete' or 'Exit'?")
         command = input().lower()
