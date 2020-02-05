@@ -124,6 +124,8 @@ def total_grade(conn, course_name):
 def check_grades(conn):
     print('Which class?')
     course_name = input().upper()
+    if course_name == 'DONE':
+        return
     if not db.check_course_exists(conn, course_name):
         print('That course does not exist')
         return
@@ -218,7 +220,7 @@ def add_assignment(conn):
     while True:
         print("Which class? ('Done' to stop)")
         course_name = input().upper()
-        if course_name == 'done':
+        if course_name == 'DONE':
             break
         if not db.check_course_exists(conn, course_name):
             print('That course does not exist')
@@ -248,6 +250,8 @@ def add_assignment(conn):
 def delete_course(conn):
     print('Which class?')
     course_name = input().upper()
+    if course_name == 'DONE':
+        return
     if not db.check_course_exists(conn, course_name):
         print('That course does not exist')
         return
@@ -263,7 +267,7 @@ def delete_assignment(conn):
     while True:
         print("Which class? ('Done' to stop)")
         course_name = input().upper()
-        if course_name == 'done':
+        if course_name == 'DONE':
             break
         if not db.check_course_exists(conn, course_name):
             print('That course does not exist')
@@ -286,7 +290,7 @@ def edit_assignment(conn):
     while True:
         print("Which class? ('Done' to stop)")
         course_name = input().upper()
-        if course_name == 'done':
+        if course_name == 'DONE':
             break
         if not db.check_course_exists(conn, course_name):
             print('That course does not exist')
